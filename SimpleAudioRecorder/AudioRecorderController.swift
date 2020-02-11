@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import AVFoundation
 
 class AudioRecorderController: UIViewController {
+    
+    var audioPlayer: AVAudioPlayer?
     
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var recordButton: UIButton!
@@ -34,11 +37,16 @@ class AudioRecorderController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
         
+        
+        
         // Use a font that won't jump around as values change
         timeElapsedLabel.font = UIFont.monospacedDigitSystemFont(ofSize: timeElapsedLabel.font.pointSize,
                                                           weight: .regular)
         timeRemainingLabel.font = UIFont.monospacedDigitSystemFont(ofSize: timeRemainingLabel.font.pointSize,
                                                                    weight: .regular)
+        
+//        calling functions 
+        loadAudio()
         
         
 	}
@@ -46,7 +54,37 @@ class AudioRecorderController: UIViewController {
     
     // MARK: - Playback
     
+    func loadAudio() {
+        // app bundle is raeadonly folder
+        
+        let songURL = Bundle.main.url(forResource: "piano", withExtension: "mp3")! // programmer error if this fails to load
+        
+        audioPlayer = try? AVAudioPlayer(contentsOf: songURL) // Fix better error handling
+        
+    }
     
+    //what do we want to do?
+//    pause, volume control, restart audio, update the time/labels
+    
+    var isPlaying: Bool {
+        audioPlayer?.isPlaying ?? false
+    }
+    
+    func play() {
+        audioPlayer?.play()
+    }
+    
+    func pause() {
+        audioPlayer?.pause()
+    }
+    
+    func playPause() {
+        if isPlaying {
+            pause()
+        } else {
+            play()
+        }
+    }
     
     // MARK: - Recording
     
@@ -55,7 +93,7 @@ class AudioRecorderController: UIViewController {
     // MARK: - Actions
     
     @IBAction func togglePlayback(_ sender: Any) {
-        
+        playPause()
 	}
     
     @IBAction func updateCurrentTime(_ sender: UISlider) {
