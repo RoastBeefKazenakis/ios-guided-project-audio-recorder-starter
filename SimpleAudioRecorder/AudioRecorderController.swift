@@ -51,6 +51,11 @@ class AudioRecorderController: UIViewController {
         
 	}
     
+    private func updateViews() {
+        //isPlaying
+        playButton.isSelected = isPlaying
+    }
+    
     
     // MARK: - Playback
     
@@ -60,6 +65,8 @@ class AudioRecorderController: UIViewController {
         let songURL = Bundle.main.url(forResource: "piano", withExtension: "mp3")! // programmer error if this fails to load
         
         audioPlayer = try? AVAudioPlayer(contentsOf: songURL) // Fix better error handling
+        
+        audioPlayer?.delegate = self
         
     }
     
@@ -72,10 +79,12 @@ class AudioRecorderController: UIViewController {
     
     func play() {
         audioPlayer?.play()
+        updateViews()
     }
     
     func pause() {
         audioPlayer?.pause()
+        updateViews()
     }
     
     func playPause() {
@@ -94,6 +103,7 @@ class AudioRecorderController: UIViewController {
     
     @IBAction func togglePlayback(_ sender: Any) {
         playPause()
+    
 	}
     
     @IBAction func updateCurrentTime(_ sender: UISlider) {
@@ -105,3 +115,16 @@ class AudioRecorderController: UIViewController {
     }
 }
 
+extension AudioRecorderController: AVAudioPlayerDelegate {
+    
+    
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        updateViews()
+    }
+    
+    func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        if let error = error {
+            print("AudioPlayer Error: \(error)")
+        }
+    }
+}
