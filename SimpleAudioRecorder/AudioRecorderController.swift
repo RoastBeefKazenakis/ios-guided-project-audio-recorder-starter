@@ -12,6 +12,7 @@ import AVFoundation
 class AudioRecorderController: UIViewController {
     
     var audioPlayer: AVAudioPlayer?
+    var timer: Timer?
     
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var recordButton: UIButton!
@@ -47,13 +48,29 @@ class AudioRecorderController: UIViewController {
         
 //        calling functions 
         loadAudio()
-        
+        updateViews()
         
 	}
+    
+    deinit {
+        stopTimer()
+    }
     
     private func updateViews() {
         //isPlaying
         playButton.isSelected = isPlaying
+        
+        //update time (currentTime)
+        
+        let elapsedTime = audioPlayer?.currentTime ?? 0
+        timeElapsedLabel.text = timeIntervalFormatter.string(from: elapsedTime)
+        
+        timeSlider.value = Float(elapsedTime)
+        timeSlider.minimumValue = 0
+        timeSlider.maximumValue = Float(audioPlayer?.duration ?? 0)
+        
+        let timeRemaining = (audioPlayer?.duration ?? 0) - elapsedTime
+        timeRemainingLabel.text = timeIntervalFormatter.string(from: timeRemaining)
     }
     
     
@@ -73,17 +90,30 @@ class AudioRecorderController: UIViewController {
     //what do we want to do?
 //    pause, volume control, restart audio, update the time/labels
     
+    func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true, block: { [weak self] (timer) in
+            self?.updateViews()
+        })
+    }
+    
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
     var isPlaying: Bool {
         audioPlayer?.isPlaying ?? false
     }
     
     func play() {
         audioPlayer?.play()
+        startTimer()
         updateViews()
     }
     
     func pause() {
         audioPlayer?.pause()
+        stopTimer()
         updateViews()
     }
     
@@ -120,6 +150,7 @@ extension AudioRecorderController: AVAudioPlayerDelegate {
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         updateViews()
+        stopTimer()
     }
     
     func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
